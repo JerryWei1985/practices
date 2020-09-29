@@ -1,0 +1,105 @@
+// Copyright 2014 Mobvoi Inc. All Rights Reserved.
+// Author: qli@mobvoi.com (Qian Li)
+
+syntax = "proto2";
+
+import "graph_resource_config.proto";
+import "post_processor.proto";
+
+package mobvoi;
+
+enum ConfidenceModelType {
+  kMaxEntropy = 0;
+  kLogisticRegression = 1;
+}
+
+message RecognizerSchedInfo {
+  optional string sched_policy = 1 [default = "SCHED_OTHER"];
+  optional int32 sched_priority = 2 [default = 0];
+  optional int32 nice_value = 3 [default = 0];
+  // cpu ids, separate by comma
+  optional string affinity = 4 [default = ""];
+}
+
+message RecognizerModelParams {
+  optional string model_name = 1 [default = "anonyme"];
+
+  // DNN acoustic model, including transition model.
+  optional string acoustic_model = 2;
+
+  // transition model
+  optional string transition_model = 24;
+
+  // HCLG decoder graph file.
+  optional GraphResourceConfig graph_resource_config = 3;
+
+  // Word symbol table file.
+  optional string word_symbol_table = 4;
+
+  // Cepstral mean/variance normalization factors from training.
+  optional string cmvn_train = 5;
+
+  // Nnet config file.
+  optional string nnet_config_file = 6;
+
+  // Config file that defines the silence detection rule in a
+  // different time interval.
+  optional string silence_detection_config_file = 7;
+
+  // TODO(qli): to be deleted.
+  optional string speaker_id = 8 [default = "global"];
+
+  // Confidence model.
+  optional string confidence_model = 9 [default = ""];
+
+  optional string acoustic_model_type = 10 [default = "kNnet3"];
+
+  optional bool use_online_cmn = 11 [default = false];
+
+  optional bool binary_symbol_table = 12 [default = false];
+
+  // By default, we concurrently run 50 recognizer thread.
+  optional int32 num_recognizer_thread = 13 [default = 50];
+
+  optional PostProcessorConfig post_processor_config = 14;
+
+  optional ConfidenceModelType confidence_model_type = 15 [default = kMaxEntropy];
+
+  optional float confidence_threshold = 19  [default = 0.2];
+
+  optional int32 reset_freq = 20  [default = 100];
+
+  optional int32 decoder_thread_prio = 21  [default = 255];
+
+  optional string word_segmenter_file = 22;
+
+  optional string eos_predictor_file = 23;
+
+  optional string feature_type = 25 [default = "kFbankAndOnlinePitch"];
+
+  // below params only work in keyword mode.
+  optional string word_homophone_file = 26;
+
+  optional string per_keyword_config = 27;
+
+  optional string keyword_dict = 28;
+
+  optional string tn_rule_fst = 29  [default = ""];
+
+  optional string query_white_list = 30;
+
+  optional string traditional_config = 31  [default = ""];
+
+  optional string pinyin_list = 32  [default = ""];
+
+  optional string phone_sequence_table = 33  [default = ""];
+
+  optional bool rnnt_use_one_inference = 34 [default = true];
+
+  optional string keyword_limit_list = 35 [default = ""];
+
+  // for sched decoder thread sched_priority
+  optional RecognizerSchedInfo recognizer_sched_info = 36;
+
+  optional bool enable_noise_filter = 37 [default = false];
+}

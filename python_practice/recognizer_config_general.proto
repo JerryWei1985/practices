@@ -1,0 +1,31 @@
+#model_name: "general"
+acoustic_model: "engine/online/testdata/device_model/final.mdl"
+acoustic_model_type: "kNnet3"
+word_symbol_table: "engine/online/testdata/device_model/base_words"
+binary_symbol_table: true
+nnet_config_file: "engine/online/testdata/device_model/nnet_config"
+cmvn_train: "engine/online/testdata/device_model/cmvn_train.ark"
+silence_detection_config_file: "engine/online/testdata/device_model/vad.config"
+word_segmenter_file: "engine/online/testdata/device_model/segmenter.trie"
+graph_resource_config {
+  model_type: "ClgDecoderResource"
+  transition_model: "engine/online/testdata/device_model/arcs.far"
+  graph: "engine/online/testdata/device_model/CLG.fst"
+  lm_rescorer_config {
+    model_type: "KenLMRescorer"
+    homophone_path: "engine/online/testdata/device_model/homophone.bin"
+    kenlm_config {
+      ngram_order: 3
+      model_path: "engine/online/testdata/device_model/lm.binary"
+      relabel_file_path: "engine/online/testdata/device_model/relabel.bin"
+    }
+  }
+}
+post_processor_config {
+  model_type: "InverseTextNormalizer"
+  inverse_text_normalizer_param {
+    rule_fst: "engine/online/testdata/device_model/rule.fst"
+    replacement_list: "engine/online/testdata/device_model/word_replacement.txt"
+    replace_reg_file: "engine/online/testdata/device_model/replace_reg_file"
+  }
+}

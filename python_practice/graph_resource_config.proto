@@ -1,0 +1,24 @@
+// Copyright 2017 Mobvoi Inc. All Rights Reserved.
+// Author: wxhu@mobvoi.com (Wenxiang Hu)
+
+syntax = "proto2";
+
+import "lm_rescorer_config.proto";
+
+package mobvoi;
+
+message ExpanderCacheConfig {
+  optional string state_table_path = 1 [default = "state_table.bin"];
+  optional string replace_state_table_path = 2 [default = "replace_state_table.bin"];
+  optional string expander_cache_path = 3 [default = "expander_cache.bin"];
+}
+
+message GraphResourceConfig {
+  optional string model_type = 1;
+  optional string transition_model = 2;
+  optional string graph = 3;
+  optional string hotword = 4;
+  optional LMRescorerConfig lm_rescorer_config = 5;
+  optional ExpanderCacheConfig expander_cache_config = 6;
+  optional string relabel_file = 7;
+}

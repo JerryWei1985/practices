@@ -1,0 +1,105 @@
+acoustic_model: "$model_path/final.mdl"
+acoustic_model_type: "kNnet3"
+word_symbol_table: "$model_path/words.txt"
+nnet_config_file: "$model_path/nnet_config"
+cmvn_train: "$model_path/cmvn/cmvn_train.ark"
+silence_detection_config_file: "$model_path/combined.dnn.decoder.vad.config.binary"
+graph_resource_config {
+  model_type: "ClgDecoderResource"
+  transition_model: "$model_path/arcs.far"
+  graph: "$model_path/CLG.fst"
+  lm_rescorer_config {
+    model_type: "KenLMRescorer"
+    homophone_path: "$model_path/homophone.bin"
+    base_score_config {
+      weight: 1
+      weight: 0.01
+      weight: 0.5
+      weight: 0.5
+      weight: 0.5
+      weight: 0.5
+      weight: 0.5
+      weight: 0.5
+      weight: 0.5
+      weight: 0.5
+    }
+    kenlm_config {
+      ngram_order: 4
+      model_path: "$model_path/lm.binary"
+      relabel_file_path: "$model_path/relabel.bin"
+    }
+    function_config {
+      app_context {
+        full_match: true
+        length_linear: true
+        alpha: 0.9
+        beta: 1.0
+        p1: -2
+        p2: -4
+      }
+    }
+    ## Do not remove, placeholder for dummy bugfix model begin
+    kenlm_config {
+      ngram_order: 4
+      model_path: ""
+      relabel_file_path: ""
+    }
+    ## Do not remove, placeholder for dummy bugfix model end
+    kenlm_config {
+      ngram_order: 4
+      model_path: "$model_path/poi/huadong_south_lm.bin"
+      relabel_file_path: "$model_path/poi/huadong_south_relabel.bin"
+    }
+    kenlm_config {
+      ngram_order: 4
+      model_path: "$model_path/poi/huanan_lm.bin"
+      relabel_file_path: "$model_path/poi/huanan_relabel.bin"
+    }
+    kenlm_config {
+      ngram_order: 4
+      model_path: "$model_path/poi/huabei_lm.bin"
+      relabel_file_path: "$model_path/poi/huabei_relabel.bin"
+    }
+    kenlm_config {
+      ngram_order: 4
+      model_path: "$model_path/poi/dongbei_lm.bin"
+      relabel_file_path: "$model_path/poi/dongbei_relabel.bin"
+    }
+    kenlm_config {
+      ngram_order: 4
+      model_path: "$model_path/poi/huazhong_lm.bin"
+      relabel_file_path: "$model_path/poi/huazhong_relabel.bin"
+    }
+    kenlm_config {
+      ngram_order: 4
+      model_path: "$model_path/poi/xibei_lm.bin"
+      relabel_file_path: "$model_path/poi/xibei_relabel.bin"
+    }
+    kenlm_config {
+      ngram_order: 4
+      model_path: "$model_path/poi/xinan_lm.bin"
+      relabel_file_path: "$model_path/poi/xinan_relabel.bin"
+    }
+    kenlm_config {
+      ngram_order: 4
+      model_path: "$model_path/poi/huadong_north_lm.bin"
+      relabel_file_path: "$model_path/poi/huadong_north_relabel.bin"
+    }
+  }
+}
+
+post_processor_config {
+  model_type: "NoiseFilter"
+  noise_filter_param {
+    noise_model: "$model_path/noise_model.one"
+    model_params: "$model_path/noise_model_config"
+  }
+  model_type: "InverseTextNormalizer"
+  inverse_text_normalizer_param {
+    rule_fst:"$model_path/rule.fst"
+    replacement_list:"$model_path/word_replacement.txt"
+  }
+}
+eos_predictor_file: "config/server/eos/3term_3gram_v2.model.bin"
+tn_rule_fst:"$model_path/tn/tn.fst,$model_path/tn/tn2.fst,$model_path/tn/tn3.fst,$model_path/tn/tn4.fst,$model_path/tn/tn5.fst,$model_path/tn/tn6.fst"
+enable_noise_filter: true

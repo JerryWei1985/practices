@@ -1,0 +1,66 @@
+      model_path: "/home/ghwei/code/practice/python_practice/lm.binary"
+      model_path: "/home/ghwei/code/practice/python_practice/poi/dongbei_lm.bin"
+      model_path: "/home/ghwei/code/practice/python_practice/poi/huabei_lm.bin"
+      model_path: "/home/ghwei/code/practice/python_practice/poi/huadong_north_lm.bin"
+      model_path: "/home/ghwei/code/practice/python_practice/poi/huadong_south_lm.bin"
+      model_path: "/home/ghwei/code/practice/python_practice/poi/huanan_lm.bin"
+      model_path: "bug_lm.bin"
+      ngram_order: 4
+      ngram_order: 4
+      ngram_order: 4
+      ngram_order: 4
+      ngram_order: 4
+      ngram_order: 4
+      ngram_order: 4
+      relabel_file_path: "/home/ghwei/code/practice/python_practice/poi/dongbei_relabel.bin"
+      relabel_file_path: "/home/ghwei/code/practice/python_practice/poi/huabei_relabel.bin"
+      relabel_file_path: "/home/ghwei/code/practice/python_practice/poi/huadong_north_relabel.bin"
+      relabel_file_path: "/home/ghwei/code/practice/python_practice/poi/huadong_south_relabel.bin"
+      relabel_file_path: "/home/ghwei/code/practice/python_practice/poi/huanan_relabel.bin"
+      relabel_file_path: "/home/ghwei/code/practice/python_practice/relabel.bin"
+      relabel_file_path: "bug_relabel.bin"
+      weight: 0.1
+      weight: 0.2
+      weight: 0.35
+      weight: 0.35
+      weight: 0.35
+      weight: 0.35
+      weight: 1.0
+    base_score_config {
+    homophone_path: "/home/ghwei/code/practice/python_practice/homophone.bin"
+    kenlm_config {
+    kenlm_config {
+    kenlm_config {
+    kenlm_config {
+    kenlm_config {
+    kenlm_config {
+    kenlm_config {
+    model_type: "KenLMRescorer"
+    replacement_list: "/home/ghwei/code/practice/python_practice/word_replacement.txt"
+    rule_fst: "/home/ghwei/code/practice/python_practice/rule.fst"
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+  graph: "/home/ghwei/code/practice/python_practice/CLG.fst"
+  inverse_text_normalizer_param {
+  lm_rescorer_config {
+  model_type: "ClgDecoderResource"
+  model_type: "InverseTextNormalizer"
+  transition_model: "/home/ghwei/code/practice/python_practice/arcs.far"
+  }
+  }
+acoustic_model: "/home/ghwei/code/practice/python_practice/final.mdl"
+acoustic_model_type: "kNnet3"
+cmvn_train: "/home/ghwei/code/practice/python_practice/cmvn/cmvn_train.ark"
+graph_resource_config {
+nnet_config_file: "/home/ghwei/code/practice/python_practice/nnet_config"
+post_processor_config {
+silence_detection_config_file: "/home/ghwei/code/practice/python_practice/combined.dnn.decoder.vad.config.binary"
+word_symbol_table: "/home/ghwei/code/practice/python_practice/words.txt"
+}
+}

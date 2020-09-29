@@ -1,0 +1,55 @@
+// Copyright 2017 Mobvoi Inc. All Rights Reserved.
+// Author: mingzou@mobvoi.com (Ming Zou)
+
+syntax = "proto2";
+
+package mobvoi;
+
+message LUProcessorParams {
+  required string canonical_table = 1;
+}
+
+message CrfPunctuationPreditorParams {
+  required string punctuation_model = 1;
+  required string punc_word_symbol_table = 2;
+  required string interrogative_words = 3;
+}
+
+message LMRescorerParams {
+  required string lm_fst = 1;
+  required int32 phi_label = 2;
+}
+
+message TextNormalizerParams {
+  required string normalizing_fst = 1;
+}
+
+message InverseTextNormalizerParams {
+  optional string rule_fst = 1;
+  optional string replacement_list = 2;
+  optional string replace_reg_file = 3;
+}
+
+message NoiseFilterParams {
+  required string noise_model = 1;
+  required string model_params = 2;
+}
+
+message AlbertPunctuatorParams {
+  required string bert_vocab_path = 1;
+  required int32 input_sequence_len = 2;
+  required string punctuator_model_path = 3;
+  required string punctuator_crf_probs = 4;
+}
+
+message PostProcessorConfig {
+  repeated string model_type = 1;
+  optional NoiseFilterParams noise_filter_param = 2;
+  optional CrfPunctuationPreditorParams crf_punctuation_preditor_param = 3;
+  optional LUProcessorParams lu_processor_param = 4;
+  optional LMRescorerParams lm_rescorer_param = 5;
+  optional TextNormalizerParams text_normalizer_param = 6;
+  optional InverseTextNormalizerParams inverse_text_normalizer_param = 7;
+  optional AlbertPunctuatorParams albert_punctuator_param = 8;
+}
+
