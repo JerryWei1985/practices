@@ -50,7 +50,9 @@ class TestBackup(unittest.TestCase):
             self.assertEqual(lang, m_upload_release.Language.CHUAN)
 
     def test_normal_project(self):
-        pass
+        project_map = {
+                m_upload_release.ProjectName.Auto: ['']
+        }
 
     def test_get_release_folder(self):
         pass
