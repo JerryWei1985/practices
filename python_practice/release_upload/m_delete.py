@@ -38,7 +38,7 @@ def check_oss_file(file_oss_path):
     req = requests.get(asr_model_url)
     oss_file_list = req.json()['files']
     if file_oss_path not in oss_file_list:
-        print('There is no {}.'.format(file_oss_path))
+        print('There is no {}'.format(file_oss_path))
         return False
     return True
 

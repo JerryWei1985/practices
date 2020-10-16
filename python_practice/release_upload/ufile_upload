@@ -218,18 +218,22 @@ def middle_func(url_server, bucket_name, upload_file, key_name, headinfo):
 
         while True:
             print "network error, resume upload the file"
-            res, headers, UploadId, partNumber, etaglist = resumeMultiUpload(url_server=url_server,
-                                                                             bucketname=bucket_name,
-                                                                             filepath=upload_file,
-                                                                             key=key_name,
-                                                                             headers=headers,
-                                                                             UploadId=UploadId,
-                                                                             partNumber=partNumber,
-                                                                             etaglist=etaglist)
+            res, headers, UploadId, partNumber, etaglist = resumeMultiUpload(
+                url_server=url_server,
+                bucketname=bucket_name,
+                filepath=upload_file,
+                key=key_name,
+                headers=headers,
+                UploadId=UploadId,
+                partNumber=partNumber,
+                etaglist=etaglist)
             if int(res.status_code) == 200:
-                finishMulti(url_server=url_server, bucketname=bucket_name, key=key_name,
+                finishMulti(url_server=url_server,
+                            bucketname=bucket_name,
+                            key=key_name,
                             UploadId=UploadId,
-                            headers=headers, etaglist=etaglist)
+                            headers=headers,
+                            etaglist=etaglist)
                 break
 
 

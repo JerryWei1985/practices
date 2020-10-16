@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding=utf-8
 
+from enum import Enum
 from bar import IncrementalBar
 from m_tar import Overwrite
 
@@ -144,7 +145,8 @@ def finishMulti(url_server, bucketname, key, UploadId, headers, etaglist):
 
 
 # exec the multi part upload
-def mulitUpload(url_server, bucketname, upload_file, key, headict):
+def mulitUpload(url_server, bucketname, upload_file, key, headict,
+                upload_file_size):
     key = startwith_check(key)
     etaglist = []
     UploadId, headers = mulitInit(url_server, bucketname, key, headict)
@@ -158,8 +160,8 @@ def mulitUpload(url_server, bucketname, upload_file, key, headict):
     partNumber = 0
 
     with open(upload_file, "rb") as f:
-        upload_file_size = math.ceil(fileSize(upload_file) / SIZE)
-        bar = IncrementalBar('Uploading', max=upload_file_size)
+        upload_file_count = math.ceil(upload_file_size / SIZE)
+        bar = IncrementalBar('Uploading', max=upload_file_count)
         for part_file in fileIter(f, BLOCKSIZE):
             url = mulitUploadUrl(url_server=url_server, bucketname=bucketname,
                                  key=key, UploadId=UploadId, partNumber=partNumber)
@@ -180,62 +182,96 @@ def mulitUpload(url_server, bucketname, upload_file, key, headict):
     return res, headers, UploadId, partNumber, etaglist
 
 
-def middle_func(url_server, bucket_name, upload_file, key_name, headinfo):
-    res, headers, UploadId, partNumber, etaglist = mulitUpload(url_server=url_server, bucketname=bucket_name, upload_file=upload_file, key=key_name, headict=headinfo)
+def middle_func(url_server, bucket_name, upload_file, key_name, headinfo,
+                upload_file_size):
+    res, headers, UploadId, _, etaglist = mulitUpload(
+        url_server, bucket_name, upload_file, key_name, headinfo, upload_file_size)
 
     if int(res.status_code) == 200:
-        finishMulti(url_server=url_server, bucketname=bucket_name,
-                    key=key_name, UploadId=UploadId,
-                    headers=headers, etaglist=etaglist)
+        finishMulti(url_server, bucket_name, key_name, UploadId,
+                    headers, etaglist)
 
 
-def upload(upload_file, project_name='', overwrite=Overwrite.no_set):
+def upload_single_file(upload_file, project_name='',
+                       overwrite=Overwrite.no_set,
+                       path_head=asr_model_head):
     bucket_name = asr_bucketname
     headinfo = {
         "groupname": asr_group,
         "password": asr_password
     }
 
+    base_name = os.path.basename(upload_file)
+
+    key_name = '{}/{}'.format(path_head, base_name)
+    if project_name:
+        project_name = project_name.replace('\\', '/')
+        key_name = '{}/{}/{}'.format(
+            path_head, project_name, base_name)
+
+    if check_oss_file(base_name, path_head, project_name):
+        if overwrite == Overwrite.no_set:
+            if not yes_no_input('Do you want to overwrite it? [y/n] '):
+                return None
+        elif overwrite == Overwrite.skip:
+            return None
+
+    print('Upload file to {}'.format(
+        asr_oss_full_path.format(key_name)))
+
+    upload_file_size = fileSize(upload_file)
+
+    if upload_file_size > 4:
+        middle_func(url_server,bucket_name, upload_file,
+                    key_name, headinfo, upload_file_size)
+    else:
+        uploads(url_server, bucket_name, upload_file, key_name, headinfo)
+
+
+def upload(upload_file, project_name='',
+           overwrite=Overwrite.no_set,
+           path_head=asr_model_head,
+           recursive=False):
     try:
         if os.path.isfile(upload_file):
-            base_name = os.path.basename(upload_file)
-
-            if check_oss_file(base_name, asr_model_head, project_name):
-                if overwrite == Overwrite.no_set:
-                    if not yes_no_input('Do you want to overwrite it? [y/n] '):
-                        return None
-                elif overwrite == Overwrite.skip:
-                    return None
-
-            upload_file_size = fileSize(upload_file)
-
-            key_name = '{}/{}'.format(asr_model_head, base_name)
-            if project_name:
-                key_name = '{}/{}/{}'.format(asr_model_head, project_name, base_name)
-            print('Upload file to {}'.format(asr_oss_full_path.format(key_name)))
-
-            if upload_file_size > 4:
-                middle_func(url_server=url_server, bucket_name=bucket_name,
-                            upload_file=upload_file, key_name=key_name,
-                            headinfo=headinfo)
-            else:
-                uploads(url_server, bucket_name, upload_file, headinfo=headinfo, key=key_name)
+            upload_single_file(upload_file, project_name, overwrite, path_head)
+        elif os.path.isdir(upload_file):
+            if not recursive:
+                print('"{}" is a folder.\nIf you want to upload all files in it, set --recursive.'.format(upload_file))
+                sys.exit(3)
+            for r, _, fs in os.walk(upload_file):
+                for f in fs:
+                    full_path = os.path.join(r, f)
+                    upload_single_file(full_path, project_name, overwrite, path_head)
         else:
-            print('Can\'t find file "{0}".'.format(upload_file))
-            exit(3)
+            print('Illegal input file path "{0}".'.format(upload_file))
+            sys.exit(3)
     except Exception as e:
         print(e)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('File will be uploaded to {}'.format(asr_model_url))
-    parser.add_argument('--input', '-i', required=True, help='Uploaded file path.')
-    parser.add_argument('--project-name', '-p', required=True, help='project name, which will be parent folder name in oss.')
+    parser = argparse.ArgumentParser(
+        'The file will be uploaded to {}'.format(asr_model_url))
+    parser.add_argument('--input', '-i', required=True,
+        help='uploaded file/folder path.')
+    parser.add_argument('--project-name', '-p', required=True,
+        help='project name, which will be parent folder name in oss.')
     parser.add_argument('--overwrite', '-ow', action='store_true')
+    parser.add_argument('--recursive', '-r', action='store_true',
+        help='Recursivly upload files in input folder.')
+    parser.add_argument('--oss-root', choices=['model', 'testset'],
+        help='oss path root. Current just support mobvoi-recognizer-server and testsets', default='model')
     args = parser.parse_args()
 
     overwrite = Overwrite.skip
     if args.overwrite:
         overwrite = Overwrite.overwrite
 
-    upload(args.input, args.project_name, overwrite)
+    oss_root = {
+        'model': asr_model_head,
+        'testset': asr_testset_head
+    }
+
+    upload(args.input, args.project_name, overwrite,
+           oss_root[args.oss_root], args.recursive)
