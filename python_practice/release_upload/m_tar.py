@@ -60,7 +60,7 @@ class Tar(object):
             if self.overwrite == Overwrite.skip:
                 return True
             elif self.overwrite == Overwrite.no_set:
-                return self.yes_no_input('Redo or not? [y/n]')
+                return not self.yes_no_input('Redo or not? [y/n]')
         return False
 
 

@@ -127,11 +127,31 @@ class BackupRlease(object):
         elif not os.path.isdir(dest_folder):
             raise IOError('{} is not a folder.'.format(dest_folder))
 
-        for r, _, files in os.walk(file_folder):
-            for f in files:
-                file_path = os.path.join(r, f)
-                dest_path = os.path.join(dest_folder, f)
+        files = os.listdir(file_folder)
+        for f in files:
+            file_path = os.path.join(file_folder, f)
+            dest_path = os.path.join(dest_folder, f)
+            if os.path.isfile(file_path):
                 self.copy_file(file_path, dest_path, overwrite)
+            elif os.path.isdir(file_path):
+                self.copy_folder(file_path, dest_path, overwrite)
+            elif os.path.islink(file_path):
+                file_path = self.get_realpath(file_path)
+                if os.path.isdir(file_path):
+                    self.copy_folder(file_path, dest_path, overwrite)
+                elif os.path.isfile(file_path):
+                    self.copy_file(file_path, dest_path, overwrite)
+
+
+    def get_realpath(self, file_path):
+        if not os.path.islink(file_path):
+            return file_path
+
+        realpath = os.readlink(file_path)
+        if realpath.startswith('/'):
+            return realpath
+
+        return os.path.join(file_path, realpath)
 
 
     def check_soft_link(self, file_path):
