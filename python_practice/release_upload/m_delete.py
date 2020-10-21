@@ -15,15 +15,33 @@ asr_password = "f3acdf8021d13da3f36086464fe850c9"
 asr_model_head = "mobvoi-recognizer-server"
 asr_model_url="http://mobvoi-oss/v1/ufile/buckets/mobvoi-speech-private?prefix=mobvoi-recognizer-server"
 
+
+def yes_no_input(massage):
+    yes = {'yes', 'y', 'Y', 'YES'}
+    value = input(massage)
+
+    if value in yes:
+        return True
+
+    return False
+
+
 def parseManager():
     parse = argparse.ArgumentParser(
         description="ASR model local delete tool, delete model file from ucloud ufile storage")
 
-    parse.add_argument('--project-name', '-p', default='', required=False, help='partial path before file name, it is usually projcet name.')
+    parse.add_argument(
+        '--project-name',
+        '-p',
+        default='',
+        required=False,
+        help='partial path before file name, it is usually projcet name.'
+    )
     parse.add_argument('--file-name', help='ufile name')
 
     args = parse.parse_args()
     return args
+
 
 def startwith_check(path):
     if path.startswith("/"):
@@ -34,27 +52,35 @@ def startwith_check(path):
 
     return path
 
+
 def check_oss_file(file_oss_path):
     req = requests.get(asr_model_url)
     oss_file_list = req.json()['files']
+
     if file_oss_path not in oss_file_list:
         print('There is no {}'.format(file_oss_path))
         return False
+
     return True
+
 
 def deleteFile(url_server, bucketname, key, headinfo):
     key = startwith_check(key)
     url = "http://{0}/v1/ufile/{1}/{2}".format(url_server, bucketname, key)
+
     try:
         if not check_oss_file(key):
             sys.exit(4)
-        resp = requests.delete(url, headers=headinfo)
-        if resp.status_code < 400:
-            print("{0} delete success".format(key))
         else:
-            print(resp.text)
+            if yes_no_input('Confirm delete {}. [y/n]'.format(url)):
+                resp = requests.delete(url, headers=headinfo)
+                if resp.status_code < 400:
+                    print("{0} delete success".format(key))
+                else:
+                    print(resp.text)
     except Exception as e:
         print(str(e))
+
 
 def main():
     args = parseManager()
