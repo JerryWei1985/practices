@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # coding=utf-8
 
-import requests
-import os
 import argparse
 import json
+import re
+import requests
 import sys
 import time
 
@@ -26,10 +26,22 @@ def yes_no_input(massage):
     return False
 
 
-def parseManager():
-    parse = argparse.ArgumentParser(
-        description="ASR model local delete tool, delete model file from ucloud ufile storage")
+def parseManager(args_string=None, prog_action=None):
+    prog = sys.argv[0]
+    if prog_action:
+        prog = ' '.join([sys.argv[0], prog_action])
 
+    parse = argparse.ArgumentParser(
+        prog=prog,
+        description="ASR model local delete tool, delete model file from ucloud ufile storage: {}".format(asr_model_url))
+
+    parse.add_argument(
+        '--full-path',
+        '-full',
+        default='',
+        required=False,
+        help='Full oss URL.'
+    )
     parse.add_argument(
         '--project-name',
         '-p',
@@ -37,9 +49,17 @@ def parseManager():
         required=False,
         help='partial path before file name, it is usually projcet name.'
     )
-    parse.add_argument('--file-name', help='ufile name')
+    parse.add_argument(
+        '--file-name',
+        '-f',
+        default='',
+        required=False,
+        help='ufile name'
+    )
 
-    args = parse.parse_args()
+    args = parse.parse_args(args=args_string)
+    if not args.full_path and not args.file_name:
+        parse.error('Empty input.')
     return args
 
 
@@ -72,7 +92,7 @@ def deleteFile(url_server, bucketname, key, headinfo):
         if not check_oss_file(key):
             sys.exit(4)
         else:
-            if yes_no_input('Confirm delete {}. [y/n]'.format(url)):
+            if yes_no_input('Confirm delete {}. [y/n] '.format(url)):
                 resp = requests.delete(url, headers=headinfo)
                 if resp.status_code < 400:
                     print("{0} delete success".format(key))
@@ -82,8 +102,8 @@ def deleteFile(url_server, bucketname, key, headinfo):
         print(str(e))
 
 
-def main():
-    args = parseManager()
+def main(args_string=None, prog_action=None):
+    args = parseManager(args_string, prog_action)
 
     headinfo = {
         "groupname": asr_group,
@@ -91,9 +111,18 @@ def main():
     }
 
     model_path = '/'.join([asr_model_head, args.file_name])
-    if args.project_name:
-        model_path = '/'.join([asr_model_head, args.project_name, args.file_name])
-    deleteFile(url_server, asr_bucketname, headinfo=headinfo, key=model_path)
+    bucket_name = asr_bucketname
+    if args.full_path:
+        url_re = re.compile(r'http://mobvoi-oss/v1/ufile/([^/]+)/(.+)')
+        oss_match = url_re.search(args.full_path)
+        if not oss_match:
+            raise ValueError('Illegal input path {}'.format(args.full_path))
+        model_path = oss_match.group(2)
+        bucket_name = oss_match.group(1)
+    else:
+        if args.project_name:
+            model_path = '/'.join([asr_model_head, args.project_name, args.file_name])
+    deleteFile(url_server, bucket_name, headinfo=headinfo, key=model_path)
 
 
 if __name__ == '__main__':

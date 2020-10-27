@@ -250,19 +250,47 @@ def upload(upload_file, project_name='',
         print(e)
 
 
-if __name__ == '__main__':
+def main(args_string=None, prog_action=None):
+    prog = sys.argv[0]
+    if prog_action:
+        prog = ' '.join([sys.argv[0], prog_action])
+
     parser = argparse.ArgumentParser(
-        'The file will be uploaded to {}'.format(asr_model_url))
-    parser.add_argument('--input', '-i', required=True,
-        help='uploaded file/folder path.')
-    parser.add_argument('--project-name', '-p', required=True,
-        help='project name, which will be parent folder name in oss.')
-    parser.add_argument('--overwrite', '-ow', action='store_true')
-    parser.add_argument('--recursive', '-r', action='store_true',
-        help='Recursivly upload files in input folder.')
-    parser.add_argument('--oss-root', choices=['model', 'testset'],
-        help='oss path root. Current just support mobvoi-recognizer-server and testsets', default='model')
-    args = parser.parse_args()
+        prog=prog,
+        description='The file will be uploaded to {}'.format(asr_model_url)
+    )
+
+    parser.add_argument(
+        '--input',
+        '-i',
+        required=True,
+        help='uploaded file/folder path.'
+    )
+    parser.add_argument(
+        '--project-name', 
+        '-p', 
+        required=True,
+        help='project name, which will be parent folder name in oss.'
+    )
+    parser.add_argument(
+        '--overwrite',
+        '-ow',
+        action='store_true'
+    )
+    parser.add_argument(
+        '--recursive',
+        '-r',
+        action='store_true',
+        help='Recursivly upload files in input folder.'
+    )
+    parser.add_argument(
+        '--oss-root',
+        choices=['model', 'testset'],
+        help='oss path root. Current just support mobvoi-recognizer-server and testsets',
+        default='model'
+    )
+
+    args = parser.parse_args(args=args_string)
 
     overwrite = Overwrite.skip
     if args.overwrite:
@@ -275,3 +303,7 @@ if __name__ == '__main__':
 
     upload(args.input, args.project_name, overwrite,
            oss_root[args.oss_root], args.recursive)
+
+
+if __name__ == '__main__':
+    main()
